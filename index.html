@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Scène animée Noël</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-image: url('https://images.unsplash.com/photo-1543589077-47d81606c1bf?q=80&w=1920');
+        background-size: cover;
+        background-position: center;
+        font-family: "Garamond", serif;
+        color: white;
+        text-shadow: 2px 2px 4px black;
+        position: relative;
+    }
+
+    /* --- Neige animée --- */
+    /* Canvas pour la neige */
+    #snowCanvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 5;
+    }
+
+    /* --- Texte animé --- */
+/* Styles pour l'élément de texte */
+        #text {
+            font-size: 3em;
+            color: white;
+            min-height: 3em; /* Empêche le corps de bouger lors du changement de texte */
+            
+            /* L'élément commence caché */
+            opacity: 0;
+            
+            /* DÉFINITION DE LA TRANSITION CSS */
+            transition: opacity 1.5s ease-in-out; 
+            margin-bottom: 20px;
+        }
+
+        /* Classe ajoutée par le JavaScript pour afficher le texte */
+        #text.visible {
+            opacity: 1;
+        }
+
+        /* Styles pour l'élément du chien (Toutou) */
+        #dog {
+            font-size: 5em;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+
+        /* Classe ajoutée par le JavaScript pour afficher le chien */
+        #dog.visible {
+            opacity: 1;
+        }
+
+
+    /* --- Scintillement des lumières --- */
+    .glow {
+        animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+        from { text-shadow: 0 0 10px white; }
+        to   { text-shadow: 0 0 25px yellow; }
+    }
+</style>
+</head>
+<body>
+
+<canvas id="snowCanvas"></canvas>
+
+<div id="text" class="glow"></div>
+<img id="dog" src="https://images.unsplash.com/photo-1518717758536-85ae29035b6d?q=80&w=800" alt="Labrador mignon">
+
+<script>
+
+/* ------------------------------
+   SYSTÈME DE NEIGE 3D
+--------------------------------*/
+const canvas = document.getElementById("snowCanvas");
+const ctx = canvas.getContext("2d");
+
+let width = canvas.width = window.innerWidth;
+let height = canvas.height = window.innerHeight;
+
+let flakes = [];
+
+function createFlake() {
+    return {
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: Math.random() * 3 + 1, // taille
+        d: Math.random() + 0.5,   // densité
+        drift: Math.random() * 1 - 0.5 // mouvement latéral
+    };
+}
+
+for (let i = 0; i < 120; i++) {
+    flakes.push(createFlake());
+}
+
+function drawSnow() {
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+
+    flakes.forEach(flake => {
+        ctx.moveTo(flake.x, flake.y);
+        ctx.arc(flake.x, flake.y, flake.r, 0, Math.PI * 2);
+    });
+
+    ctx.fill();
+    updateSnow();
+}
+
+function updateSnow() {
+    flakes.forEach(flake => {
+        flake.y += flake.d;
+        flake.x += flake.drift;
+
+        if (flake.y > height) {
+            flake.y = -5;
+            flake.x = Math.random() * width;
+        }
+    });
+}
+
+function animateSnow() {
+    drawSnow();
+    requestAnimationFrame(animateSnow);
+}
+
+animateSnow();
+
+window.addEventListener("resize", () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+});
+
+    const messages = [
+        "Ça ne serait vraiment pas raisonnable",
+        "Mais quand on aime, on n'est pas raisonnable du tout",
+        "Bon pour un Toutou"
+    ];
+
+    const textElement = document.getElementById("text");
+    const dogElement = document.getElementById("dog");
+
+    function showFirstMessage() {
+        textElement.textContent = messages[0];
+        void textElement.offsetWidth;
+        textElement.classList.add("visible");
+    }
+
+    function transitionToMessage(index) {
+        textElement.classList.remove("visible");
+
+        setTimeout(() => {
+            textElement.textContent = messages[index];
+            void textElement.offsetWidth;
+            textElement.classList.add("visible");
+
+            if (index === 2) {
+                dogElement.classList.add("visible");
+            }
+        }, 1500);
+    }
+
+    showFirstMessage();
+
+    setTimeout(() => transitionToMessage(1), 5000);
+    setTimeout(() => transitionToMessage(2), 10000);
+</script>
+
+</body>
+</html>
